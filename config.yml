@@ -1,8 +1,0 @@
-port: 8080
-
-db: 
-    user: root
-    password: password
-    database: template
-    host: localhost:3306
-    migration_src: C:/absolute/path/internal/architecture/database/migrations

@@ -2,6 +2,7 @@ package architecture
 
 import (
 	"fmt"
+
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,7 +20,7 @@ func (r *Router) Start() error {
 	for _, r := range r.RouteGroups {
 		r.Register(e)
 	}
-	fmt.Printf("\nThe following %d HTTP routes has been registered\n", len(e.Routes()))
+	fmt.Printf("\n%d Routes registered\n", len(e.Routes()))
 	for _, r := range e.Routes() {
 		fmt.Printf("\t%s: %s\n", r.Method, r.Path)
 	}

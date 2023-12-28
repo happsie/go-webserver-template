@@ -2,23 +2,24 @@ package user
 
 import (
 	"errors"
+
 	"github.com/google/uuid"
 	"github.com/happsie/go-webserver-template/internal/architecture"
 )
 
 type Repository struct {
-	Container architecture.Container
+	Container *architecture.Container
 }
 
 func (r Repository) Create(user User) error {
 	res, err := r.Container.DB.NamedExec(`INSERT INTO users (id, email, display_name, created_at, updated_at, version) 
-									VALUES (:user.id, :user.displayName, :user.createdAt, :user.updatedAt, 1)`, user)
+									VALUES (:id, :email, :display_name, :created_at, :updated_at, 1)`, user)
 	if err != nil {
-		return nil
+		return err
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return nil
+		return err
 	}
 	if affected == 0 {
 		return errors.New("minumum affected rows not reached")
@@ -28,23 +29,23 @@ func (r Repository) Create(user User) error {
 
 func (r Repository) Read(ID uuid.UUID) (User, error) {
 	user := User{}
-	err := r.Container.DB.Get(&user, "SELECT * FROM users WHERE id = ?", ID)
+	err := r.Container.DB.Get(&user, "SELECT * FROM users WHERE id = $1", ID.String())
 	if err != nil {
-		return User{}, nil
+		return User{}, err
 	}
 	return user, nil
 }
 
 func (r Repository) Update(user User) error {
 	res, err := r.Container.DB.NamedExec(`UPDATE users
-										SET id = :user.id, display_name = :user.displayName, created_at = :user.createdAt, updated_at = :user.updatedAt, version = :version + 1
-										WHERE id = :user.id AND version = user.version`, user)
+										SET id = :id, display_name = :display_name, email = :email, created_at = :created_at, updated_at = :updated_at, version = :version + 1
+										WHERE id = :id AND version = :version`, user)
 	if err != nil {
-		return nil
+		return err
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return nil
+		return err
 	}
 	if affected == 0 {
 		return errors.New("minumum affected rows not reached")
@@ -53,13 +54,13 @@ func (r Repository) Update(user User) error {
 }
 
 func (r Repository) Delete(ID uuid.UUID) error {
-	res, err := r.Container.DB.NamedExec(`DELETE * FROM users where id = :ID`, ID)
+	res, err := r.Container.DB.Exec(`DELETE FROM users where id = $1`, ID)
 	if err != nil {
-		return nil
+		return err
 	}
 	affected, err := res.RowsAffected()
 	if err != nil {
-		return nil
+		return err
 	}
 	if affected == 0 {
 		return errors.New("minumum affected rows not reached")

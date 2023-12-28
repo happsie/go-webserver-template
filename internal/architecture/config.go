@@ -1,9 +1,9 @@
 package architecture
 
 import (
-	"flag"
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -12,15 +12,15 @@ type Config struct {
 		User         string `yaml:"user"`
 		Password     string `yaml:"password"`
 		Database     string `yaml:"database"`
+		Schema       string `yaml:"schema"`
 		Host         string `yaml:"host"`
+		Port         string `yaml:"port"`
 		MigrationSrc string `yaml:"migration_src"`
 	} `yaml:"db"`
 }
 
-func LoadConfig() (Config, error) {
-	configFileName := flag.String("config", "../../config.yml", "Specify config file")
-	flag.Parse()
-	file, err := os.ReadFile(*configFileName)
+func LoadConfig(path string) (Config, error) {
+	file, err := os.ReadFile(path)
 	if err != nil {
 		return Config{}, err
 	}

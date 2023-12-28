@@ -1,24 +1,27 @@
 package main
 
 import (
-	"github.com/happsie/go-webserver-template/internal/architecture"
-	"github.com/happsie/go-webserver-template/internal/architecture/database"
-	"github.com/happsie/go-webserver-template/internal/domain/user"
+	"flag"
 	"log/slog"
 	"os"
+
+	"github.com/happsie/go-webserver-template/internal/architecture"
+	"github.com/happsie/go-webserver-template/internal/domain/user"
 )
 
 func main() {
+	configPath := flag.String("config", "config.yml", "Specify config file")
+	flag.Parse()
 	jsonLogHandler := slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	})
 	log := slog.New(jsonLogHandler)
-	conf, err := architecture.LoadConfig()
+	conf, err := architecture.LoadConfig(*configPath)
 	if err != nil {
 		log.Error("could not load config", "error", err)
 		os.Exit(1)
 	}
-	db, err := database.Init(log, conf)
+	db, err := architecture.InitDB(log, conf)
 	if err != nil {
 		log.Error("could not connect to database", "error", err)
 		os.Exit(1)
@@ -31,7 +34,7 @@ func main() {
 	r := architecture.Router{
 		Port: 8080,
 		RouteGroups: []architecture.Routes{
-			user.Api{Container: c},
+			user.InitAPI(c),
 		},
 	}
 	if err := r.Start(); err != nil {
